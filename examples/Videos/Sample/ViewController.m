@@ -65,6 +65,21 @@
     return [ASStaticLayoutSpec staticLayoutSpecWithChildren:@[guitarVideoNode, nicCageVideoNode, simonVideoNode, hlsVideoNode]];
   };
   
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    guitarVideoNode.asset = [AVAsset assetWithURL:[NSURL URLWithString:@"https://files.parsetfss.com/8a8a3b0c-619e-4e4d-b1d5-1b5ba9bf2b42/tfss-3045b261-7e93-4492-b7e5-5d6358376c9f-editedLiveAndDie.mov"]];
+    [guitarVideoNode play];
+    
+    hlsVideoNode.asset = [AVAsset assetWithURL:[NSURL URLWithString:@"http://devimages.apple.com/iphone/samples/bipbop/gear1/prog_index.m3u8"]];
+    [hlsVideoNode play];
+    
+    nicCageVideoNode.asset = [AVAsset assetWithURL:[NSURL URLWithString:@"https://files.parsetfss.com/8a8a3b0c-619e-4e4d-b1d5-1b5ba9bf2b42/tfss-753fe655-86bb-46da-89b7-aa59c60e49c0-niccage.mp4"]];
+    [nicCageVideoNode play];
+    
+    NSURL *url = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"simon" ofType:@"mp4"]];
+    simonVideoNode.asset = [AVAsset assetWithURL:url];
+    [simonVideoNode play];
+  });
+  
   [self.view addSubnode:_rootNode];
 }
 
@@ -77,11 +92,11 @@
   }
   
   _guitarVideoNode = [[ASVideoNode alloc] init];
-  _guitarVideoNode.asset = [AVAsset assetWithURL:[NSURL URLWithString:@"https://files.parsetfss.com/8a8a3b0c-619e-4e4d-b1d5-1b5ba9bf2b42/tfss-3045b261-7e93-4492-b7e5-5d6358376c9f-editedLiveAndDie.mov"]];
   _guitarVideoNode.gravity = AVLayerVideoGravityResizeAspectFill;
   _guitarVideoNode.backgroundColor = [UIColor lightGrayColor];
   _guitarVideoNode.periodicTimeObserverTimescale = 1; //Default is 100
   _guitarVideoNode.delegate = self;
+  _guitarVideoNode.URL = [NSURL URLWithString:@"https://upload.wikimedia.org/wikipedia/en/5/52/Testcard_F.jpg"];
   
   return _guitarVideoNode;
 }
@@ -90,12 +105,12 @@
 {
   ASVideoNode *nicCageVideoNode = [[ASVideoNode alloc] init];
   nicCageVideoNode.delegate = self;
-  nicCageVideoNode.asset = [AVAsset assetWithURL:[NSURL URLWithString:@"https://files.parsetfss.com/8a8a3b0c-619e-4e4d-b1d5-1b5ba9bf2b42/tfss-753fe655-86bb-46da-89b7-aa59c60e49c0-niccage.mp4"]];
   nicCageVideoNode.gravity = AVLayerVideoGravityResize;
   nicCageVideoNode.backgroundColor = [UIColor lightGrayColor];
   nicCageVideoNode.shouldAutorepeat = YES;
-  nicCageVideoNode.shouldAutoplay = YES;
+//  nicCageVideoNode.shouldAutoplay = YES;
   nicCageVideoNode.muted = YES;
+  nicCageVideoNode.URL = [NSURL URLWithString:@"https://upload.wikimedia.org/wikipedia/en/5/52/Testcard_F.jpg"];
   
   return nicCageVideoNode;
 }
@@ -104,13 +119,12 @@
 {
   ASVideoNode *simonVideoNode = [[ASVideoNode alloc] init];
   
-  NSURL *url = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"simon" ofType:@"mp4"]];
-  simonVideoNode.asset = [AVAsset assetWithURL:url];
   simonVideoNode.gravity = AVLayerVideoGravityResizeAspect;
   simonVideoNode.backgroundColor = [UIColor lightGrayColor];
   simonVideoNode.shouldAutorepeat = YES;
-  simonVideoNode.shouldAutoplay = YES;
+//  simonVideoNode.shouldAutoplay = YES;
   simonVideoNode.muted = YES;
+  simonVideoNode.URL = [NSURL URLWithString:@"https://upload.wikimedia.org/wikipedia/en/5/52/Testcard_F.jpg"];
   
   return simonVideoNode;
 }
@@ -120,11 +134,10 @@
   ASVideoNode *hlsVideoNode = [[ASVideoNode alloc] init];
   
   hlsVideoNode.delegate = self;
-  hlsVideoNode.asset = [AVAsset assetWithURL:[NSURL URLWithString:@"http://devimages.apple.com/iphone/samples/bipbop/gear1/prog_index.m3u8"]];
   hlsVideoNode.gravity = AVLayerVideoGravityResize;
   hlsVideoNode.backgroundColor = [UIColor lightGrayColor];
   hlsVideoNode.shouldAutorepeat = YES;
-  hlsVideoNode.shouldAutoplay = YES;
+//  hlsVideoNode.shouldAutoplay = YES;
   hlsVideoNode.muted = YES;
  
   // Placeholder image

@@ -481,7 +481,7 @@ static NSString * const kStatus = @"status";
 
 - (void)_setAndFetchAsset:(AVAsset *)asset url:(NSURL *)assetURL
 {
-  [self __clearFetchedData]; // clear the player but not the underlying ASNetworkImageNode to avoid flicker
+  [self clearFetchedData]; // clear the player but not the underlying ASNetworkImageNode to avoid flicker
   _asset = asset;
   _assetURL = assetURL;
   [self setNeedsDataFetch];
