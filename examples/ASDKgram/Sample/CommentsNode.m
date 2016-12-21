@@ -26,6 +26,8 @@
 {
   CommentFeedModel              *_commentFeed;
   NSMutableArray <ASTextNode *> *_commentNodes;
+  ASDisplayNode                 *_redNode;
+  BOOL                           _redNodeEnabled;
 }
 
 #pragma mark - Lifecycle
@@ -37,18 +39,30 @@
     self.automaticallyManagesSubnodes = YES;
 
     _commentNodes = [[NSMutableArray alloc] init];
+    
+    _redNode = ({
+      ASDisplayNode *node = [[ASDisplayNode alloc] init];
+      node.backgroundColor = [UIColor redColor];
+      node.style.minHeight = ASDimensionMake(30);
+      node;
+    });
   }
   return self;
 }
 
 - (ASLayoutSpec *)layoutSpecThatFits:(ASSizeRange)constrainedSize
 {
+  NSMutableArray *nodesForStack = [NSMutableArray arrayWithArray:_commentNodes];
+  if (_redNodeEnabled) {
+    [nodesForStack insertObject:_redNode atIndex:0];
+  }
+  
   return [ASStackLayoutSpec
           stackLayoutSpecWithDirection:ASStackLayoutDirectionVertical
           spacing:INTER_COMMENT_SPACING
           justifyContent:ASStackLayoutJustifyContentStart
           alignItems:ASStackLayoutAlignItemsStretch
-          children:[_commentNodes copy]];
+          children:nodesForStack];
 }
 
 #pragma mark - Instance Methods
@@ -100,6 +114,60 @@
     
     [_commentNodes addObject:commentLabel];
   }
+}
+
+- (void)didLoad {
+  [super didLoad];
+  
+  [self.view addGestureRecognizer:({
+    [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTap)];
+  })];
+}
+
+- (void)didTap {
+  _redNodeEnabled = !_redNodeEnabled;
+  
+  ASCellNode *cellNode = (ASCellNode *)self.supernode;
+  [self transitionLayoutWithAnimation:YES shouldMeasureAsync:NO measurementCompletion:^{
+    // Allows cell node to resize.
+    [cellNode setNeedsLayout];
+  }];
+}
+
+- (void)animateLayoutTransition:(id<ASContextTransitioning>)context {
+  BOOL (^inserted)(ASDisplayNode *) = ^BOOL(ASDisplayNode *node) {
+    return [[context insertedSubnodes] containsObject:node];
+  };
+  
+  BOOL (^removed)(ASDisplayNode *) = ^BOOL(ASDisplayNode *node) {
+    return [[context removedSubnodes] containsObject:node];
+  };
+  
+  BOOL insertedRedNode = inserted(_redNode);
+  BOOL removedRedNode = removed(_redNode);
+  if (insertedRedNode) {
+    _redNode.alpha = 0;
+  }
+  
+  [UIView animateWithDuration:1 delay:0 options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionBeginFromCurrentState animations:^{
+    if (insertedRedNode || removedRedNode) {
+      _redNode.alpha = insertedRedNode ? 1 : 0;
+    }
+    for (ASTextNode *textNode in _commentNodes) {
+      BOOL textNodeInserted = inserted(textNode);
+      BOOL textNodeRemoved = removed(textNode);
+      CGRect textNodeInitialFrame = [context initialFrameForNode:textNode];
+      CGRect textNodeFinalFrame = [context finalFrameForNode:textNode];
+      // The frame changes from/to CGRectZero during insertions and removals respectively, therefore we have to take this into account.
+      BOOL textNodeFrameChanged = !CGRectEqualToRect(textNodeInitialFrame, textNodeFinalFrame) && !textNodeRemoved && !textNodeInserted;
+      if (textNodeFrameChanged) {
+        textNode.frame = textNodeFinalFrame;
+      }
+    }
+    
+  } completion:^(BOOL finished) {
+    [context completeTransition:finished];
+  }];
 }
 
 @end
